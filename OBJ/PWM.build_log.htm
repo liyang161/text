@@ -1,0 +1,275 @@
+<html>
+<body>
+<pre>
+<h1>礦ision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: μVision V5.24.2.0
+Copyright (C) 2017 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: 1 1, 1, LIC=JDA0P-MBB9W-YDTK5-GI45Q-KCDLG-02J74
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Professional  Version: 5.24.1
+Toolchain Path:  D:\KEIL\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 5 (build 528)
+Assembler:       Armasm.exe V5.06 update 5 (build 528)
+Linker/Locator:  ArmLink.exe V5.06 update 5 (build 528)
+Library Manager: ArmAr.exe V5.06 update 5 (build 528)
+Hex Converter:   FromElf.exe V5.06 update 5 (build 528)
+CPU DLL:         SARMCM3.DLL V5.24.1
+Dialog DLL:      DARMSTM.DLL V1.68.0.0
+Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.0.1.0
+Dialog DLL:      TARMSTM.DLL V1.66.0.0
+ 
+<h2>Project:</h2>
+C:\Users\16171\Documents\embeddedCode\USER\PWM.uvprojx
+Project File Date:  05/24/2024
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.06 update 5 (build 528)', folder: 'D:\KEIL\ARM\ARMCC\Bin'
+Rebuild target 'PWM'
+compiling parameter_identify.c...
+compiling adc.c...
+compiling filter.c...
+compiling ina219.c...
+..\HARDWARE\IIC\ina219.h(147): warning:  #1-D: last line of file ends without a newline
+  #endif
+..\HARDWARE\IIC\ina219.c(475): warning:  #177-D: variable "a"  was declared but never referenced
+  	s32 a;
+..\HARDWARE\IIC\ina219.c(532): warning:  #1-D: last line of file ends without a newline
+  }
+..\HARDWARE\IIC\ina219.c: 3 warnings, 0 errors
+compiling park.c...
+..\HARDWARE\motor_control\park.h(9): warning:  #1-D: last line of file ends without a newline
+  #endif
+..\HARDWARE\motor_control\park.c(58): warning:  #1-D: last line of file ends without a newline
+  }
+..\HARDWARE\motor_control\park.c: 2 warnings, 0 errors
+compiling led.c...
+compiling parameter_identify_data.c...
+compiling stm32f10x_it.c...
+compiling rt_nonfinite.c...
+compiling FluxObserver.c...
+compiling rtGetInf.c...
+compiling rtGetNaN.c...
+compiling key.c...
+compiling system_stm32f10x.c...
+compiling timer.c...
+compiling ina3221.c...
+..\HARDWARE\IIC\INA3221.h(23): warning:  #1295-D: Deprecated declaration INA3221_Median_filtering1 - give arg types
+  int INA3221_Median_filtering1();
+..\HARDWARE\IIC\INA3221.h(24): warning:  #1295-D: Deprecated declaration INA3221_Median_filtering2 - give arg types
+  int INA3221_Median_filtering2();
+..\HARDWARE\IIC\INA3221.h(25): warning:  #1295-D: Deprecated declaration INA3221_Median_filtering3 - give arg types
+  int INA3221_Median_filtering3();
+..\HARDWARE\IIC\INA3221.h(26): warning:  #1295-D: Deprecated declaration INA3221_Mean_filtering1 - give arg types
+  int INA3221_Mean_filtering1();
+..\HARDWARE\IIC\ina3221.c(426): warning:  #177-D: variable "a"  was declared but never referenced
+  	s32 a;
+..\HARDWARE\IIC\ina3221.c(462): warning:  #177-D: variable "a"  was declared but never referenced
+  	s32 a;
+..\HARDWARE\IIC\ina3221.c(531): warning:  #1-D: last line of file ends without a newline
+  }
+..\HARDWARE\IIC\ina3221.c(498): warning:  #177-D: variable "a"  was declared but never referenced
+  	s32 a;
+..\HARDWARE\IIC\ina3221.c: 8 warnings, 0 errors
+compiling SMO.c...
+compiling filter_data.c...
+assembling startup_stm32f10x_hd.s...
+compiling stack.c...
+..\SYSTEM\sys\stack.c(123): warning:  #870-D: invalid multibyte character sequence
+          printf("鏍堥《鍚戜笅绗?%lf涓厓绱犱负锛?%d\n", i, S.data[S.top]);  //褰撳墠鏍堥《鎸囬拡鐨勫厓绱犳墦鍗板嚭
+..\SYSTEM\sys\stack.c(123): warning:  #870-D: invalid multibyte character sequence
+          printf("鏍堥《鍚戜笅绗?%lf涓厓绱犱负锛?%d\n", i, S.data[S.top]);  //褰撳墠鏍堥《鎸囬拡鐨勫厓绱犳墦鍗板嚭
+..\SYSTEM\sys\stack.c(123): warning:  #181-D: argument is incompatible with corresponding format string conversion
+          printf("鏍堥《鍚戜笅绗?%lf涓厓绱犱负锛?%d\n", i, S.data[S.top]);  //褰撳墠鏍堥《鎸囬拡鐨勫厓绱犳墦鍗板嚭
+..\SYSTEM\sys\stack.c(123): warning:  #181-D: argument is incompatible with corresponding format string conversion
+          printf("鏍堥《鍚戜笅绗?%lf涓厓绱犱负锛?%d\n", i, S.data[S.top]);  //褰撳墠鏍堥《鎸囬拡鐨勫厓绱犳墦鍗板嚭
+..\SYSTEM\sys\stack.c(158): warning:  #1-D: last line of file ends without a newline
+  */
+..\SYSTEM\sys\stack.c: 5 warnings, 0 errors
+compiling core_cm3.c...
+compiling dma.c...
+compiling ina3221_2.c...
+..\HARDWARE\IIC\INA3221_2.h(23): warning:  #1295-D: Deprecated declaration INA3221_2_Median_filtering1 - give arg types
+  int INA3221_2_Median_filtering1();
+..\HARDWARE\IIC\INA3221_2.h(24): warning:  #1295-D: Deprecated declaration INA3221_2_Median_filtering2 - give arg types
+  int INA3221_2_Median_filtering2();
+..\HARDWARE\IIC\INA3221_2.h(25): warning:  #1295-D: Deprecated declaration INA3221_2_Median_filtering3 - give arg types
+  int INA3221_2_Median_filtering3();
+..\HARDWARE\IIC\ina3221_2.c(427): warning:  #177-D: variable "a"  was declared but never referenced
+  	s32 a;
+..\HARDWARE\IIC\ina3221_2.c(463): warning:  #177-D: variable "a"  was declared but never referenced
+  	s32 a;
+..\HARDWARE\IIC\ina3221_2.c(532): warning:  #1-D: last line of file ends without a newline
+  }
+..\HARDWARE\IIC\ina3221_2.c(499): warning:  #177-D: variable "a"  was declared but never referenced
+  	s32 a;
+..\HARDWARE\IIC\ina3221_2.c: 7 warnings, 0 errors
+compiling delay.c...
+compiling usart.c...
+compiling sys.c...
+compiling main.c...
+..\HARDWARE\motor_control\park.h(9): warning:  #1-D: last line of file ends without a newline
+  #endif
+..\HARDWARE\IIC\INA3221.h(23): warning:  #1295-D: Deprecated declaration INA3221_Median_filtering1 - give arg types
+  int INA3221_Median_filtering1();
+..\HARDWARE\IIC\INA3221.h(24): warning:  #1295-D: Deprecated declaration INA3221_Median_filtering2 - give arg types
+  int INA3221_Median_filtering2();
+..\HARDWARE\IIC\INA3221.h(25): warning:  #1295-D: Deprecated declaration INA3221_Median_filtering3 - give arg types
+  int INA3221_Median_filtering3();
+..\HARDWARE\IIC\INA3221.h(26): warning:  #1295-D: Deprecated declaration INA3221_Mean_filtering1 - give arg types
+  int INA3221_Mean_filtering1();
+..\HARDWARE\IIC\INA3221_2.h(23): warning:  #1295-D: Deprecated declaration INA3221_2_Median_filtering1 - give arg types
+  int INA3221_2_Median_filtering1();
+..\HARDWARE\IIC\INA3221_2.h(24): warning:  #1295-D: Deprecated declaration INA3221_2_Median_filtering2 - give arg types
+  int INA3221_2_Median_filtering2();
+..\HARDWARE\IIC\INA3221_2.h(25): warning:  #1295-D: Deprecated declaration INA3221_2_Median_filtering3 - give arg types
+  int INA3221_2_Median_filtering3();
+main.c(224): warning:  #223-D: function "MYDMA_Enable" declared implicitly
+  	MYDMA_Enable(DMA1_Channel4,num);//开始一次DMA传输！	 
+main.c(249): warning:  #177-D: variable "Vdc"  was declared but never referenced
+  	double Vdc=10;   //电源电压为10V
+main.c(252): warning:  #550-D: variable "min"  was set but never used
+  	int min,min_value; 
+main.c(284): warning:  #177-D: variable "count"  was declared but never referenced
+      static int count=0;
+main.c(286): warning:  #177-D: variable "K2"  was declared but never referenced
+      double K2=0.2;//通过积分分离的方式来实现抗积分饱和，积分饱和是指执行机构达到极限输出能力了，仍无法到达目标值，在很长一段时间内无法消除静差造成的。
+main.c(291): warning:  #177-D: variable "current_error_accumulation"  was declared but never referenced
+      static double current_error_accumulation=0;//存储目标电流和当前电流的差值之和，即积分
+main.c(326): warning:  #177-D: variable "count"  was declared but never referenced
+      static int count=0;
+main.c(328): warning:  #177-D: variable "K2"  was declared but never referenced
+      double K2=0.2;//通过积分分离的方式来实现抗积分饱和，积分饱和是指执行机构达到极限输出能力了，仍无法到达目标值，在很长一段时间内无法消除静差造成的。
+main.c(333): warning:  #177-D: variable "current_error_accumulation"  was declared but never referenced
+      static double current_error_accumulation=0;//存储目标电流和当前电流的差值之和，即积分
+main.c(334): warning:  #177-D: variable "ia"  was declared but never referenced
+  		double ia,ib,id,iq; 	
+main.c(334): warning:  #177-D: variable "ib"  was declared but never referenced
+  		double ia,ib,id,iq; 	
+main.c(334): warning:  #177-D: variable "id"  was declared but never referenced
+  		double ia,ib,id,iq; 	
+main.c(364): warning:  #177-D: variable "max"  was declared but never referenced
+      double max=600,min=-600;//设置最大最小值，以免发生危险
+main.c(364): warning:  #177-D: variable "min"  was declared but never referenced
+      double max=600,min=-600;//设置最大最小值，以免发生危险
+main.c(367): warning:  #177-D: variable "K1"  was declared but never referenced
+      double K1=0.03;//阈值，闭环死区是指执行机构的最小控制量，无法再通过调节来满足控制精度，如果仍然持续调节，系统则会在目标值前后频繁动作，不能稳定下来
+main.c(368): warning:  #177-D: variable "K2"  was declared but never referenced
+      double K2=0.2;//通过积分分离的方式来实现抗积分饱和，积分饱和是指执行机构达到极限输出能力了，仍无法到达目标值，在很长一段时间内无法消除静差造成的。
+main.c(384): warning:  #550-D: variable "Ts"  was set but never used
+    double Ts=runTime/1000000;//采样时间
+main.c(388): warning:  #177-D: variable "index"  was declared but never referenced
+  	static double index[]={0.0833, -0.0696,0.5917, 0.0149};
+main.c(389): warning:  #177-D: variable "i"  was declared but never referenced
+  	int i=0;
+main.c(393): warning:  #177-D: variable "L"  was declared but never referenced
+  	static double L=0.0135+0.004*0;
+main.c(394): warning:  #550-D: variable "Ke"  was set but never used
+  	static double Ke=1.27*0.01+0.005;//磁通
+main.c(496): warning:  #177-D: variable "K2"  was declared but never referenced
+      double K2=0.2;//通过积分分离的方式来实现抗积分饱和，积分饱和是指执行机构达到极限输出能力了，仍无法到达目标值，在很长一段时间内无法消除静差造成的。
+main.c(501): warning:  #177-D: variable "current_error_accumulation"  was declared but never referenced
+      static double current_error_accumulation=0;//存储目标电流和当前电流的差值之和，即积分
+main.c(540): warning:  #177-D: variable "K2"  was declared but never referenced
+      double K2=0.2;//通过积分分离的方式来实现抗积分饱和，积分饱和是指执行机构达到极限输出能力了，仍无法到达目标值，在很长一段时间内无法消除静差造成的。
+main.c(545): warning:  #177-D: variable "current_error_accumulation"  was declared but never referenced
+      static double current_error_accumulation=0;//存储目标电流和当前电流的差值之和，即积分
+main.c(584): warning:  #177-D: variable "K2"  was declared but never referenced
+      double K2=0.2;//通过积分分离的方式来实现抗积分饱和，积分饱和是指执行机构达到极限输出能力了，仍无法到达目标值，在很长一段时间内无法消除静差造成的。
+main.c(589): warning:  #177-D: variable "current_error_accumulation"  was declared but never referenced
+      static double current_error_accumulation=0;//存储目标电流和当前电流的差值之和，即积分
+main.c(628): warning:  #177-D: variable "K2"  was declared but never referenced
+      double K2=0.2;//通过积分分离的方式来实现抗积分饱和，积分饱和是指执行机构达到极限输出能力了，仍无法到达目标值，在很长一段时间内无法消除静差造成的。
+main.c(633): warning:  #177-D: variable "current_error_accumulation"  was declared but never referenced
+      static double current_error_accumulation=0;//存储目标电流和当前电流的差值之和，即积分
+main.c(722): warning:  #177-D: variable "phase_add"  was declared but never referenced
+  		double phase_add=speed*PI/25*0.02;
+main.c(727): warning:  #177-D: variable "a"  was declared but never referenced
+  	  double a,b;
+main.c(727): warning:  #177-D: variable "b"  was declared but never referenced
+  	  double a,b;
+main.c(993): warning:  #177-D: variable "phase0"  was declared but never referenced
+      double phase0=phase*0.01+speed*PI/25*0.02;
+main.c(994): warning:  #177-D: variable "phase_add"  was declared but never referenced
+  		double phase_add=speed*PI/25*0.02;
+main.c(1000): warning:  #550-D: variable "error1"  was set but never used
+  		double error1,error2,error3,error4;
+main.c(1000): warning:  #550-D: variable "error2"  was set but never used
+  		double error1,error2,error3,error4;
+main.c(1000): warning:  #550-D: variable "error3"  was set but never used
+  		double error1,error2,error3,error4;
+main.c(1000): warning:  #550-D: variable "error4"  was set but never used
+  		double error1,error2,error3,error4;
+main.c(1296): warning:  #177-D: variable "speed_row"  was declared but never referenced
+      double speed_row=0;
+main.c(1297): warning:  #177-D: variable "AN_hall1"  was declared but never referenced
+  		double AN_hall1,AN_hall2;
+main.c(1297): warning:  #177-D: variable "AN_hall2"  was declared but never referenced
+  		double AN_hall1,AN_hall2;
+main.c(1382): warning:  #177-D: variable "K2"  was declared but never referenced
+      double K2=0.2;//通过积分分离的方式来实现抗积分饱和，积分饱和是指执行机构达到极限输出能力了，仍无法到达目标值，在很长一段时间内无法消除静差造成的。
+main.c(1388): warning:  #177-D: variable "current_error_accumulation"  was declared but never referenced
+      static double current_error_accumulation=0;//存储目标电流和当前电流的差值之和，即积分
+main.c(1389): warning:  #177-D: variable "current_zheng"  was declared but never referenced
+  		int current_zheng=1; //当前电流为正
+main.c(1471): warning:  #223-D: function "MYDMA_Config" declared implicitly
+  		MYDMA_Config(DMA1_Channel4,(u32)&USART1->DR,(u32)SendBuff,SEND_BUF_SIZE);//DMA1通道4,外设为串口1,存储器为SendBuff,长度SEND_BUF_SIZE.
+main.c(1452): warning:  #550-D: variable "t"  was set but never used
+      u16 t;
+main.c(1453): warning:  #177-D: variable "recive_num"  was declared but never referenced
+      int recive_num=0;
+main.c(1454): warning:  #177-D: variable "len"  was declared but never referenced
+      u16 len;
+main.c(1455): warning:  #177-D: variable "led0pwmval"  was declared but never referenced
+      u16 led0pwmval=0;
+main.c(1456): warning:  #177-D: variable "dir"  was declared but never referenced
+      u8 dir=1;
+main.c(1460): warning:  #177-D: variable "last_iq"  was declared but never referenced
+  		double last_iq=0;
+main.c(1461): warning:  #177-D: variable "last_id"  was declared but never referenced
+  		double last_id=0;
+main.c(1464): warning:  #177-D: variable "cmd"  was declared but never referenced
+      char cmd[50]= {' '}; //存储接收到的命令
+main.c(1465): warning:  #177-D: variable "cmd_split"  was declared but never referenced
+      char *cmd_split;
+main.c(1611): warning:  #177-D: variable "count"  was declared but never referenced
+  		static int count=0;
+main.c(1613): warning:  #177-D: variable "D_target"  was declared but never referenced
+  		double D_target=0;
+main.c(1614): warning:  #177-D: variable "Q_target"  was declared but never referenced
+  		double Q_target=0;
+main.c(1619): warning:  #177-D: variable "i"  was declared but never referenced
+  		int i=0;
+main.c(1620): warning:  #177-D: variable "t_times1"  was declared but never referenced
+      static int t_times1=0;//TIM3中断执行的次数
+main.c: 67 warnings, 0 errors
+compiling misc.c...
+compiling stm32f10x_gpio.c...
+compiling stm32f10x_rcc.c...
+compiling stm32f10x_tim.c...
+compiling stm32f10x_usart.c...
+compiling stm32f10x_exti.c...
+compiling stm32f10x_adc.c...
+compiling stm32f10x_dma.c...
+linking...
+Program Size: Code=53052 RO-data=1020 RW-data=1216 ZI-data=9392  
+FromELF: creating hex file...
+"..\OBJ\PWM.axf" - 0 Error(s), 92 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: Keil
+                http://www.keil.com/pack/Keil.STM32F1xx_DFP.2.2.0.pack
+                Keil.STM32F1xx_DFP.2.2.0
+                STMicroelectronics STM32F1 Series Device Support, Drivers and Examples
+
+<h2>Collection of Component include folders:</h2>
+  .\RTE\_PWM
+  D:\KEIL\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include
+
+<h2>Collection of Component Files used:</h2>
+Build Time Elapsed:  00:00:02
+</pre>
+</body>
+</html>

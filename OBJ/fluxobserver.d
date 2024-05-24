@@ -1,0 +1,11 @@
+..\obj\fluxobserver.o: ..\HARDWARE\flux_observer\FluxObserver.c
+..\obj\fluxobserver.o: ..\HARDWARE\flux_observer\FluxObserver.h
+..\obj\fluxobserver.o: ..\HARDWARE\flux_observer\rtwtypes.h
+..\obj\fluxobserver.o: ..\HARDWARE\flux_observer\FluxObserver_types.h
+..\obj\fluxobserver.o: ..\HARDWARE\flux_observer\rtGetInf.h
+..\obj\fluxobserver.o: ..\HARDWARE\flux_observer\rt_nonfinite.h
+..\obj\fluxobserver.o: D:\KEIL\ARM\ARMCC\Bin\..\include\stddef.h
+..\obj\fluxobserver.o: ..\HARDWARE\flux_observer\zero_crossing_types.h
+..\obj\fluxobserver.o: D:\KEIL\ARM\ARMCC\Bin\..\include\math.h
+..\obj\fluxobserver.o: ..\HARDWARE\flux_observer\FluxObserver_private.h
+..\obj\fluxobserver.o: ..\HARDWARE\flux_observer\rt_defines.h

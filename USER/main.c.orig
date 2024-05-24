@@ -1,0 +1,584 @@
+#include "led.h"
+#include "delay.h"
+#include "key.h"
+#include "sys.h"
+#include "usart.h"
+#include "timer.h"
+#include <adc.h>
+#include <string.h>
+#include <math.h>
+#include <stdlib.h>
+#include <time.h>
+#include "stack.h"
+#include "ina219.h"
+#define PI 3.14159265
+int get_length(char str[]);
+int voltage_source=10;//电源电压
+int PWM_T=999;//PWM周期
+double phase_dif=3*PI/4;//相位差
+double angel=0.6;//输出推力初始角为0.6，输出拉力初始角为0.6+3.14
+int method=0;//0为开环直线运动，电流随时间变化，1为电流恒定模式
+int delaytime=5;
+int voltage_amp=0;
+SqStack Position;
+double phase=0;    //当前的相位角  x100
+double last_phase=0;
+int get_hall=-1;      //是否向上位机传递霍尔传感器信息的标志位
+int get_cur=1;      //是否向上位机传递电流传感器信息的标志位
+double hall1;      //霍尔传感器数据
+double hall2;
+int start=-1;     //开始标志位
+double position=0;  //当前位置
+double speed=0;    //当前速度
+SqStack Speed;     //存储
+double T=50;    //当前永磁体的周期为 50mm
+double current=0;//当前电流
+//double kp_current=100,ki_current=1,kd_current=20; //电流控制的pid系数
+double kp_current=0,ki_current=0,kd_current=0; //电流控制的pid系数
+int PID_value=0;
+time_t c_start;   //记录程序运行时间
+//I = 0.1564V^2 + 0.0122V + 0.0455   //本设备电压与电流关系
+/*
+通信指令：
+vos  24    更改voltage_source为24V
+vol 500    更改当前电压输出峰值为5.00V
+ang 314    更改初始相位角为3.14（rad）
+dif 314		 更改相位差为3.14（rad）
+pha 314    更改当前相位为3.14（rad）
+del 10     设置延时为10毫秒
+ckp 1       设置kp系数为1
+cki 1			 设置ki系数为1
+ckd 1       设置kd系数为1
+gethal        获取霍尔传感器信息及位置信息
+getcur     获取当前电流信息
+*/
+
+
+//换向函数，coil为要换向的线圈，i=1为正向，i=0为负
+void phase_convert(int coil,int i) {
+
+    if(coil==1) {
+        if(i==1) {
+            GPIO_SetBits(GPIOC,GPIO_Pin_2);
+            GPIO_ResetBits(GPIOC,GPIO_Pin_3);
+        }
+
+        else {
+            GPIO_SetBits(GPIOC,GPIO_Pin_3);
+            GPIO_ResetBits(GPIOC,GPIO_Pin_2);
+        }
+    }
+
+    if(coil==2) {
+        if(i==1) {
+            GPIO_SetBits(GPIOC,GPIO_Pin_0);
+            GPIO_ResetBits(GPIOC,GPIO_Pin_1);
+        }
+        else {
+            GPIO_SetBits(GPIOC,GPIO_Pin_1);
+            GPIO_ResetBits(GPIOC,GPIO_Pin_0);
+        }
+    }
+
+    if(coil==3) {
+        if(i==1) {
+            GPIO_SetBits(GPIOA,GPIO_Pin_11);
+            GPIO_ResetBits(GPIOA,GPIO_Pin_12);
+        }
+        else {
+            GPIO_SetBits(GPIOA,GPIO_Pin_12);
+            GPIO_ResetBits(GPIOA,GPIO_Pin_11);
+        }
+    }
+
+    if(coil==4) {
+        if(i==1) {
+            GPIO_SetBits(GPIOA,GPIO_Pin_6);
+            GPIO_ResetBits(GPIOA,GPIO_Pin_7);
+        }
+        else {
+            GPIO_SetBits(GPIOA,GPIO_Pin_7);
+            GPIO_ResetBits(GPIOA,GPIO_Pin_6);
+        }
+    }
+
+
+}
+
+//开环运动，amp为正弦电压峰值,单位为0.01V，phase为相位
+void motor_run(int amp,int phase) {
+    double phase0=phase*0.01;
+
+    /*
+    int phase1=amp*sin(phase0+angel);
+    int phase2=amp*sin(phase0-phase_dif+angel);
+    int phase3=amp*sin(phase0-phase_dif*2+angel);
+    int phase4=amp*sin(phase0-phase_dif*3+angel);
+    */
+    //很奇怪，相位差方向不能反
+    int phase1=amp*sin(phase0+angel);
+    int phase2=amp*sin(phase0+phase_dif+angel);
+    int phase3=amp*sin(phase0+phase_dif*2+angel);
+    int phase4=amp*sin(phase0+phase_dif*3+angel);
+
+
+
+    //设置每一个线圈的电压，并设置方向
+    //printf("%d,%d,%d,%d\n",phase1,phase2,phase3,phase4);
+    if(phase1>=0) {
+        TIM_SetCompare1(TIM2, PWM_T-phase1);
+        phase_convert(1,1);
+    }
+    else {
+        phase1=abs(phase1);
+        TIM_SetCompare1(TIM2, PWM_T-phase1);
+        phase_convert(1,-1);
+    }
+
+    if(phase2>=0) {
+        TIM_SetCompare2(TIM2, PWM_T-phase2);
+        phase_convert(2,1);
+    }
+    else {
+        phase2=abs(phase2);
+        TIM_SetCompare2(TIM2, PWM_T-phase2);
+        phase_convert(2,-1);
+    }
+
+    if(phase3>=0) {
+        TIM_SetCompare3(TIM3, PWM_T-phase3);
+        phase_convert(3,1);
+    }
+    else {
+        phase3=abs(phase3);
+        TIM_SetCompare3(TIM3, PWM_T-phase3);
+        phase_convert(3,-1);
+    }
+    if(phase4>=0) {
+        TIM_SetCompare4(TIM3, PWM_T-phase4);
+        phase_convert(4,1);
+    }
+    else {
+        phase4=abs(phase4);
+        TIM_SetCompare4(TIM3, PWM_T-phase4);
+        phase_convert(4,-1);
+    }
+
+}
+//串口初始化
+void GPIOInit() {  //初始化PB3,PB4,PD1,PD2
+    GPIO_InitTypeDef  GPIO_InitStructure;
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);	 //使能PC端口时钟
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 		 //推挽输出
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
+    GPIO_Init(GPIOC, &GPIO_InitStructure);					 //根据设定参数初始化GPIOC.0123
+    GPIO_ResetBits(GPIOC,GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3);						 // 输出高
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);	 //使能PB,PE端口时钟
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_11|GPIO_Pin_6|GPIO_Pin_7;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 		 //推挽输出
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
+    GPIO_Init(GPIOA, &GPIO_InitStructure);					 //根据设定参数初始化GPIOB.34
+    GPIO_ResetBits(GPIOA,GPIO_Pin_12|GPIO_Pin_11|GPIO_Pin_6|GPIO_Pin_7);						 // 输出高
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);	 //使能PB端口时钟
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_11;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 		 //推挽输出
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
+    GPIO_Init(GPIOB, &GPIO_InitStructure);					 //根据设定参数初始化GPIOB.34
+    GPIO_SetBits(GPIOB,GPIO_Pin_12|GPIO_Pin_11);						 // 输出高
+
+
+
+}
+
+//根据霍尔传感器信号获取当前位置
+void get_position() {
+    double speed_row=0;
+    double last_position=position;
+    //对霍尔传感器信号归一化
+    //hall1=(float)Get_Adc_Average(14,3)*(3.3/4096);
+    //hall2=(float)Get_Adc_Average(15,3)*(3.3/4096);
+    hall1=(float)Get_Adc_Average(14,3)*(3.3/4096);
+    hall2=(float)Get_Adc_Average(15,3)*(3.3/4096);
+    hall1=hall1-1.65;
+    hall2=hall2-1.47;
+    hall1=hall1/0.829;
+
+    hall2=hall2/0.778;
+    if(hall1<0.01&&hall1>-0.01) {  //防止出现异常状况
+        if(hall1>0)
+            hall1=0.005;
+        else
+            hall1=-0.005;
+    }
+
+    /*
+    if(hall2<0.01&&hall2>-0.01){   //防止出现异常状况
+    	if(hall2>0)
+    		hall2=0.005;
+    	else
+    		hall2=-0.005;
+    }
+    */
+    phase=atan(hall1/hall2)*100;
+
+
+
+    if(hall1>0&&hall2>0)   //将360度分成4个不同的区域
+        phase=phase+PI*50;
+    else if(hall1>0&&hall2<0)
+        phase=phase+PI*150;
+    else if(hall1<0&&hall2<0)
+        phase=phase+PI*150;
+    else if(hall1<0&&hall2>0)
+        phase=phase+PI*50;
+
+
+
+
+
+    if(abs(phase-last_phase)<100)              //考虑边界情况
+        position=position+(phase-last_phase)/PI/200*T;
+    else if(phase<last_phase)
+        position=position+(phase+PI*200-last_phase)/PI/200*T;
+    else
+        //position=position+(-phase+(last_phase+PI*200))/PI/200*T;
+        position=position+(phase-PI*200-last_phase)/PI/200*T;
+    last_phase=phase;
+
+    //push(&Position, position);
+    //avg(&Position, &position);
+
+    speed=(position-last_position)*100;
+    //speed_row=(position-last_position)/difftime(clock(),c_start)/1000;
+    //push(&Speed, speed_row);
+    //c_start = clock();
+    //avg(&Speed, &speed);
+
+}
+
+
+
+//电流环的PID控制
+void current_PID(double target_current){
+	double max=100,min=-100;//设置最大最小值，以免发生危险
+
+	double K1=0;//阈值，闭环死区是指执行机构的最小控制量，无法再通过调节来满足控制精度，如果仍然持续调节，系统则会在目标值前后频繁动作，不能稳定下来
+	double K2=0.1;//通过积分分离的方式来实现抗积分饱和，积分饱和是指执行机构达到极限输出能力了，仍无法到达目标值，在很长一段时间内无法消除静差造成的。
+	//解决积分饱和的一种方法是使用积分分离，该方法是在累计误差小于某个阈值才使用积分项，累计误差过大则不再继续累计误差，相当于只使用了PD控制器。
+	double current_lasterror=target_current-current;
+	double current_error;//存储目标电流和当前电流的差值
+	static double current_error_accumulation=0;//存储目标电流和当前电流的差值之和，即积分
+	current=(double)ina219_GetCurrent_uA()/1000/1000;  //获取电流，并将电流单位转化为A，可能应该放在定时器中
+
+
+	PID_value=0;
+	current_error=target_current-current;
+	current_error_accumulation=current_error_accumulation+current_error;
+	if(current_error>K2||current_error<K2*(-1)||(current_error>0.002&&current_error<0.002*(-1)))
+		current_error_accumulation=0;
+	if(current_error>K1||current_error<K1*(-1)){
+		//因为motor_run中电压的单位是0.01V，所以在下式中对PID的结果*100
+		PID_value=(kp_current*current_error+ki_current*current_error_accumulation+kd_current*(current_error-current_lasterror));
+		if(PID_value>max)
+			PID_value=max;
+		if(PID_value<min)
+			PID_value=min;
+
+	}
+	//else
+		//printf("not run pid\n");
+	if(current_error>0.1||current_error<-0.1)
+		PID_value=0;
+	//printf("curent %lf voltage_amp+PID_value %d current_error %lf \n ",current,voltage_amp+PID_value,current_error);
+}
+
+
+
+//电机控制函数，state是控制模式
+void motor_control(int state,double value) {
+    if(state==0)  //恒定电压模式，value为目标电压
+    {
+        //voltage_amp=value*100; //从串口接受控制信息时再更改voltage_amp
+        //value=value/resistance;//将电压转换为电流
+        //!!!!需要修改，电流和电压不是线性关系
+
+        current_PID(value);
+    }
+}
+//向上位机传递当前电机的状态信息
+void status_information() {
+    if(get_hall==1) {
+        //printf("hall1 is: %lf , hall2 is %lf \n",hall1,hall2);
+        // printf("phase %lf position %lf speed %lf",phase/100.0,position,speed );
+        printf("%lf,%lf,%lf,%lf\n",hall1,hall2,phase/100.0,position);
+    }
+    if(get_cur==1) {
+        //printf("curent %lf\n",current);
+        printf("curent %lf voltage_amp+PID_value %d\n",current,voltage_amp+PID_value);
+    }
+
+}
+int main(void)
+{
+    int voltage_source=10;//电源电压
+    int PWM_T=voltage_source*100-1;//PWM周期
+    u16 t;
+    int recive_num=0;
+    u16 len;
+    u16 led0pwmval=0;
+    u8 dir=1;
+
+
+    char cmd[50]= {' '}; //存储接收到的命令
+    char *cmd_split;
+    delay_init();	    	 //延时函数初始化
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 	 //设置NVIC中断分组2:2位抢占优先级，2位响应优先级
+    uart_init(115200);	 //串口初始化为115200
+    LED_Init();			     //LED端口初始化
+    GPIOInit();
+    Adc_Init();
+    ina219_init();
+
+    TIM3_Int_Init(PWM_T,0);
+    servo_init(PWM_T,0);
+    TIM_SetCompare1(TIM2, PWM_T-1);
+    TIM_SetCompare2(TIM2, PWM_T-1);
+    TIM_SetCompare3(TIM3, PWM_T-1);
+    TIM_SetCompare4(TIM3, PWM_T-1);
+    delay_ms(100);
+    c_start = clock();    //!< 单位为ms
+    initStack(&Speed);
+    initStack(&Position);
+
+
+
+    motor_run(100,0);//是不是应该删掉
+    t=0;
+    while(1)
+    {
+        get_position();
+        //printf("speed %lf position %lf\n",speed,position );
+
+        if(start==1) {
+            current_PID(0.371);  //！！！！！！需要计算当前相位的电流！！！！！！！！！
+            //motor_control(1,1);
+            motor_run(10.0/voltage_source*(voltage_amp),phase);
+            //motor_run(10.0/voltage_source*(voltage_amp+PID_value),phase);
+        }
+
+        status_information();
+    }
+}
+//将给定电压转换为对应电流
+double voltage2current(double voltage){
+	return 0.1564*voltage*voltage + 0.0122*voltage + 0.0455;
+}
+
+//定时器3中断服务程序, 每秒25600hz
+void TIM3_IRQHandler(void)   //TIM3中断
+{
+    u16 len;
+    char cmd[50]= {' '}; //存储接收到的命令
+    char *cmd_split;
+    int recive_num=0;
+    int t;
+    static int t_times1=0;//TIM3中断执行的次数
+    if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) //检查指定的TIM中断发生与否:TIM 中断源
+    {
+        TIM_ClearITPendingBit(TIM3, TIM_IT_Update  );  //清除TIMx的中断待处理位:TIM 中断源
+        //get_position();	//每隔一个时间周期，获取一次位置数据
+        /*
+        	t_times1++;
+        	if(t_times1==256){
+        		get_position();
+        	}
+        	if(t_times1==512){
+        		t_times1=0;
+        		get_position();
+
+        		printf("phase %lf position %lf speed %lf\n",phase/100.0,position,speed );
+        		//printf("curent %lf\n",current);
+        	}
+        	*/
+        if(USART_RX_STA&0x8000)
+        {
+
+            len=USART_RX_STA&0x3fff;//得到此次接收到的数据长度
+            memset(cmd,' ',sizeof(cmd)/sizeof(cmd[0]));//将cmd重置
+
+            //memcpy(cmd,USART_RX_BUF,sizeof(USART_RX_BUF)/sizeof(USART_RX_BUF[0])); //字符串复制，cmd可用string的函数处理
+            memcpy(cmd,USART_RX_BUF,len); //字符串复制，cmd可用string的函数处理
+
+            cmd_split=strtok(cmd," ");//字符串分割
+            //printf("%s",cmd_split);
+
+            if(memcmp(cmd_split,"system",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) { //change voltage_source
+                cmd_split = strtok(NULL," ");
+
+                printf("voltage_source is %d\n",voltage_source);
+                printf("voltage_amp is %d\n",voltage_amp);
+                printf("PWM_T is %d\n",PWM_T);
+                printf("angel is %lf\n",angel);
+                printf("phase_dif is %lf\n",phase_dif);
+                printf("phase is %lf\n",phase);
+
+                printf("phase1 is %lf\n",voltage_amp*sin(phase*0.1+angel));
+                printf("phase2 is %lf\n",voltage_amp*sin(phase*0.1-phase_dif+angel));
+                printf("phase3 is %lf\n",voltage_amp*sin(phase*0.1-phase_dif*2+angel));
+                printf("phase4 is %lf\n",voltage_amp*sin(phase*0.1-phase_dif*3+angel));
+
+                USART_RX_STA=0;
+                return;
+            }
+
+            if(memcmp(cmd_split,"vos",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) { //change voltage_source
+                cmd_split = strtok(NULL," ");
+                recive_num=0;
+                for(t=0; t<get_length(cmd_split); t++)
+                {
+                    recive_num=cmd_split[t]-'0'+recive_num*10;
+                }
+                printf("change vos %d\n",recive_num);
+                voltage_source=recive_num;//电源电压
+                //PWM_T=voltage_source*100-1;//PWM周期
+                USART_RX_STA=0;
+                return;
+            }
+
+            if(memcmp(cmd_split,"vol",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+                cmd_split = strtok(NULL," ");
+                recive_num=0;
+                for(t=0; t<get_length(cmd_split); t++)
+                {
+                    recive_num=cmd_split[t]-'0'+recive_num*10;
+                }
+                printf("change vol %d\n",recive_num);
+                //TIM_SetCompare2(TIM3,PWM_T-recive_num);	//设置比较器
+                voltage_amp=recive_num;
+                motor_run(recive_num,phase);
+                USART_RX_STA=0;
+                return;
+            }
+            if(memcmp(cmd_split,"ang",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+                cmd_split = strtok(NULL," ");
+                recive_num=0;
+                for(t=0; t<get_length(cmd_split); t++)
+                {
+                    recive_num=cmd_split[t]-'0'+recive_num*10;
+                }
+                angel=recive_num*0.01;
+                printf("change ang %lf\n",angel);
+                USART_RX_STA=0;
+                return;
+            }
+            if(memcmp(cmd_split,"dif",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+                cmd_split = strtok(NULL," ");
+                recive_num=0;
+                for(t=0; t<get_length(cmd_split); t++)
+                {
+                    recive_num=cmd_split[t]-'0'+recive_num*10;
+                }
+                phase_dif=recive_num*0.01;
+                printf("change phase_dif %lf\n",phase_dif);
+
+                USART_RX_STA=0;
+                return;
+            }
+            if(memcmp(cmd_split,"pha",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+                cmd_split = strtok(NULL," ");
+                recive_num=0;
+                for(t=0; t<get_length(cmd_split); t++)
+                {
+                    recive_num=cmd_split[t]-'0'+recive_num*10;
+                }
+                phase=recive_num;
+                printf("change phase %f\n",phase*0.01);
+
+                USART_RX_STA=0;
+                return;
+            }
+            if(memcmp(cmd_split,"start",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+
+                start=start*(-1);
+
+                printf("start is %d\n",start);
+
+                USART_RX_STA=0;
+                return;
+            }
+            if(memcmp(cmd_split,"gethal",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+
+                get_hall=get_hall*(-1);
+
+                printf("hall is %d\n",get_hall);
+
+                USART_RX_STA=0;
+                return;
+            }
+            if(memcmp(cmd_split,"getcur",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+
+                get_cur=get_cur*(-1);
+
+                printf("curent_state is %d An",get_cur);
+
+                USART_RX_STA=0;
+                return;
+            }
+            if(memcmp(cmd_split,"del",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+                cmd_split = strtok(NULL," ");
+                recive_num=0;
+                for(t=0; t<get_length(cmd_split); t++)
+                {
+                    recive_num=cmd_split[t]-'0'+recive_num*10;
+                }
+                printf("change delaytime %d\n",recive_num);
+                delaytime=recive_num;
+                USART_RX_STA=0;
+                return;
+            }
+            if(memcmp(cmd_split,"ckp",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+                cmd_split = strtok(NULL," ");
+                recive_num=0;                
+                kp_current=strtod(cmd_split,NULL);
+                printf("change kp_current %lf\n",kp_current);;
+                USART_RX_STA=0;
+                return;
+            }
+            if(memcmp(cmd_split,"cki",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+                cmd_split = strtok(NULL," ");
+                recive_num=0;
+                ki_current=strtod(cmd_split,NULL);
+                printf("change ki_current %lf\n",ki_current);
+                USART_RX_STA=0;
+                return;
+            }
+            if(memcmp(cmd_split,"ckd",sizeof(cmd_split)/sizeof(cmd_split[0]))==0) {
+                cmd_split = strtok(NULL," ");
+                recive_num=0;
+                kd_current=strtod(cmd_split,NULL);
+                printf("change kd_current %lf\n",kd_current);
+                USART_RX_STA=0;
+                return;
+            }
+            delay_ms(10);
+            USART_RX_STA=0;
+        }
+    }
+}
+
+
+//获取字符串长度
+int get_length(char str[])
+{
+    char *p = str;
+    int count = 0;
+    while (*p++ != '\0')
+    {
+        count++;
+    }
+    return count;
+}
